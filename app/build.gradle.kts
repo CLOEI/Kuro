@@ -20,6 +20,10 @@ android {
                 cppFlags += "-std=c++17"
             }
         }
+
+        ndk {
+            abiFilters += "arm64-v8a"
+        }
     }
 
     buildTypes {
