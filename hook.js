@@ -7,6 +7,12 @@ if (!base_address) {
     console.error("Base address not found");
 }
 
+const modules = Process.enumerateModules();
+
+for (let module of modules) {
+	console.log(module.name);
+}
+
 console.log("Base address: " + base_address);
 console.log("enet_host_service address: " + enet_host_service_address);
 console.log("enet_peer_send address: " + enet_peer_send_address);
