@@ -51,6 +51,10 @@ android {
     buildFeatures {
         viewBinding = true
     }
+
+    packaging {
+        jniLibs.excludes.add("**/libdobby.so")
+    }
 }
 
 dependencies {

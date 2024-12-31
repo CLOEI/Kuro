@@ -7,6 +7,8 @@ file(GLOB KITTYMEMORY_SRC ${KITTYMEMORY_PATH}/*.cpp)
 set(KEYSTONE_LIB ${KITTYMEMORY_PATH}/Deps/Keystone/libs-android/${CMAKE_ANDROID_ARCH_ABI}/libkeystone.a)
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/vendor/Dobby)
+add_subdirectory(${CMAKE_SOURCE_DIR}/vendor/enet)
+include_directories(${CMAKE_SOURCE_DIR}/vendor/enet/include)
 
 add_library(${CMAKE_PROJECT_NAME} SHARED
         ${KITTYMEMORY_SRC}
@@ -15,5 +17,6 @@ add_library(${CMAKE_PROJECT_NAME} SHARED
 target_link_libraries(${CMAKE_PROJECT_NAME}
         ${KEYSTONE_LIB}
         dobby_static
+        enet
         android
         log)

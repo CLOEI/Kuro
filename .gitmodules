@@ -4,3 +4,9 @@
 [submodule "app/src/main/cpp/vendor/Dobby"]
 	path = app/src/main/cpp/vendor/Dobby
 	url = https://github.com/chiteroman/Dobby.git
+[submodule "app/src/main/cpp/vendor/imgui"]
+	path = app/src/main/cpp/vendor/imgui
+	url = https://github.com/ocornut/imgui.git
+[submodule "app/src/main/cpp/vendor/enet"]
+	path = app/src/main/cpp/vendor/enet
+	url = https://github.com/lsalzman/enet.git

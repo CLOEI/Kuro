@@ -5,6 +5,7 @@ const enet_packet_create_address = base_address.add(0x1685884);
 const baseapp_draw_address = base_address.add(0x163D5B0);
 const enet_send_packet_raw = base_address.add(0x100B2B0);
 const enet_send_packet = base_address.add(0x100B47C);
+const log_to_console = base_address.add(0x119AC74);
 
 if (!base_address) {
   console.error("Base address not found");
