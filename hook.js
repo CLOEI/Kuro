@@ -2,9 +2,12 @@ const base_address = Process.findModuleByName("libgrowtopia.so").base;
 const enet_host_service_address = base_address.add(0x168790C);
 const enet_peer_send_address = base_address.add(0x1685BD4);
 const enet_packet_create_address = base_address.add(0x1685884);
+const baseapp_draw_address = base_address.add(0x163D5B0);
+const enet_send_packet_raw = base_address.add(0x100B2B0);
+const enet_send_packet = base_address.add(0x100B47C);
 
 if (!base_address) {
-    console.error("Base address not found");
+  console.error("Base address not found");
 }
 
 const modules = Process.enumerateModules();
@@ -26,36 +29,42 @@ const enet_event_type = {
 let enet_event = null;
 let peer = null;
 Interceptor.attach(enet_host_service_address, {
-    onEnter: function(args) {
-      enet_event = args[1];
-    },
-    onLeave: function(retval) {
-        if (retval > 0) {
-          let type = enet_event.readU8();
-          switch(type) {
-            case enet_event_type.CONNECT:
-              console.log("CONNECTED");
-              break;
-            case enet_event_type.DISCONNECT:
-              console.log("DISCONNECTED");
-              break;
-            case enet_event_type.RECEIVE:
-              const packet = enet_event.add(0x18).readPointer();
-              const packetDataLength = packet.add(0x18).readUInt();
-              const packetData = packet.add(0x10).readPointer().readByteArray(packetDataLength);
-              console.log(packetData);
-              break;
-          }
+  onEnter: function(args) {
+    enet_event = args[1];
+  },
+  onLeave: function(retval) {
+      if (retval > 0) {
+        let type = enet_event.readU8();
+        switch(type) {
+          case enet_event_type.CONNECT:
+            console.log("CONNECTED");
+            break;
+          case enet_event_type.DISCONNECT:
+            console.log("DISCONNECTED");
+            break;
+          case enet_event_type.RECEIVE:
+            const packet = enet_event.add(0x18).readPointer();
+            const packetDataLength = packet.add(0x18).readUInt();
+            const packetData = packet.add(0x10).readPointer().readByteArray(packetDataLength);
+            console.log(packetData);
+            break;
         }
-    }
+      }
+  }
 });
 
 Interceptor.attach(enet_peer_send_address, {
-    onEnter: function(args) {
-        peer = args[0];
-        const packet = args[2];
-        const packetDataLength = packet.add(0x18).readUInt();
-        const packetData = packet.add(0x10).readPointer().readByteArray(packetDataLength);
-        console.log(packetData);
-    }
+  onEnter: function(args) {
+    peer = args[0];
+    const packet = args[2];
+    const packetDataLength = packet.add(0x18).readUInt();
+    const packetData = packet.add(0x10).readPointer().readByteArray(packetDataLength);
+    console.log(packetData);
+  }
+});
+
+Interceptor.attach(base_address.add(baseapp_draw_address), {
+  onEnter: function(args) {
+    console.log("draw()");
+  }
 });

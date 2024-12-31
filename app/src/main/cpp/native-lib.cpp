@@ -43,15 +43,8 @@ install_hook(enet_host_service, __int64_t, unsigned int *host, __int64_t event, 
     return orig_enet_host_service(host, event, timeout);
 }
 
-install_hook(eglSwapBuffers, EGLBoolean, EGLDisplay dpy, EGLSurface surface) {
-    __android_log_print(ANDROID_LOG_INFO, "Kuro", "eglSwapBuffers called");
-    return orig_eglSwapBuffers(dpy, surface);
-}
-
 const std::string lib_game = "libgrowtopia.so";
-const std::string lib_egl = "libEGL.so";
 ElfScanner game_lib;
-ElfScanner egl_lib;
 
 __unused __attribute__((constructor))
 void lib_main() {
@@ -59,8 +52,7 @@ void lib_main() {
         do {
             std::this_thread::sleep_for(std::chrono::seconds(1));
             game_lib = ElfScanner::createWithPath(lib_game);
-            egl_lib = ElfScanner::createWithPath(lib_egl);
-        } while (!game_lib.isValid() || !egl_lib.isValid());
+        } while (!game_lib.isValid());
         __android_log_print(ANDROID_LOG_INFO, "Kuro", "Library %s loaded", lib_game.c_str());
 
         std::string processName = KittyMemory::getProcessName();
@@ -72,7 +64,6 @@ void lib_main() {
         __android_log_print(ANDROID_LOG_INFO, "Kuro", "enet_host_service address: %p", enet_host_service_address);
 
         install_hook_enet_host_service(enet_host_service_address);
-        install_hook_eglSwapBuffers(lib_egl.c_str(), "eglSwapBuffers");
     });
     thread.detach();
 }
