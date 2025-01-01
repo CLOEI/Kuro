@@ -26,6 +26,7 @@ typedef __int64_t (*enet_send_packet)(__int64_t result, __uint8_t *a2, __int64_t
 typedef __int64_t (*enet_send_packet_raw)(__int64_t result, __int64_t a2, int a3, const void *a4, __int64_t a5, int a6);
 typedef __int64_t (*base_app_draw_t)(__int64_t a1);
 typedef __int64_t (*get_screen_width_t)();
+typedef __int64_t (*get_screen_height_t)();
 
 enet_host_service_t orig_enet_host_service = nullptr;
 log_to_console_t orig_log_to_console = nullptr;
@@ -33,15 +34,20 @@ enet_send_packet orig_enet_send_packet = nullptr;
 enet_send_packet_raw orig_enet_send_packet_raw = nullptr;
 base_app_draw_t orig_base_app_draw = nullptr;
 get_screen_width_t orig_get_screen_width = nullptr;
+get_screen_height_t orig_get_screen_height = nullptr;
 
 void render_menu() {
     if (!init) {
+        auto screen_width = orig_get_screen_width();
+        auto screen_height = orig_get_screen_height();
+        __android_log_print(ANDROID_LOG_INFO, "Kuro", "Screen width|height: %d|%d", screen_width, screen_height);
+
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
         ImGuiIO& io = ImGui::GetIO();
+        io.DisplaySize = ImVec2((float)screen_width, (float)screen_height);
         io.IniFilename = nullptr;
-        ImGui_ImplAndroid_Init(nullptr);
-        ImGui_ImplOpenGL3_Init("#version 100");
+        ImGui_ImplOpenGL3_Init();
         ImFontConfig font_cfg;
         font_cfg.SizePixels = 22.0f;
         io.Fonts->AddFontDefault(&font_cfg);
@@ -50,9 +56,7 @@ void render_menu() {
         init = true;
     }
 
-    ImGuiIO& io = ImGui::GetIO();
     ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplAndroid_NewFrame();
     ImGui::NewFrame();
 
     ImGui::Begin("Kuro", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
@@ -62,7 +66,6 @@ void render_menu() {
     ImGui::End();
 
     ImGui::Render();
-    glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
@@ -119,12 +122,16 @@ __int64_t hooked_enet_packet_send_raw(__int64_t result, __int64_t a2, int a3, co
 }
 
 __int64_t hooked_base_app_draw(__int64_t a1) {
-//    render_menu();
+    render_menu();
     return orig_base_app_draw(a1);
 }
 
 __int64_t hooked_get_screen_width() {
     return orig_get_screen_width();
+}
+
+__int64_t hooked_get_screen_height() {
+    return orig_get_screen_height();
 }
 
 void hook_function(void* functionAddress, void* hookedFunction, void** originalFunction, const char* functionName) {
@@ -155,12 +162,14 @@ void lib_main() {
         void* enet_send_packet_raw_address = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(baseAddress) + 0x100B2B0);
         void* base_app_draw_address = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(baseAddress) + 0x163D5B0);
         void* get_screen_width_address = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(baseAddress) + 0x16B469C);
+        void* get_screen_height_address = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(baseAddress) + 0x16B46A8);
         __android_log_print(ANDROID_LOG_INFO, "Kuro", "enet_host_service address: %p", enet_host_service_address);
         __android_log_print(ANDROID_LOG_INFO, "Kuro", "log_to_console address: %p", log_to_console_address);
         __android_log_print(ANDROID_LOG_INFO, "Kuro", "enet_send_packet address: %p", enet_send_packet_address);
         __android_log_print(ANDROID_LOG_INFO, "Kuro", "enet_send_packet_raw address: %p", enet_send_packet_raw_address);
         __android_log_print(ANDROID_LOG_INFO, "Kuro", "BaseApp::draw address: %p", base_app_draw_address);
         __android_log_print(ANDROID_LOG_INFO, "Kuro", "get_screen_width address: %p", get_screen_width_address);
+        __android_log_print(ANDROID_LOG_INFO, "Kuro", "get_screen_height address: %p", get_screen_height_address);
 
         hook_function(enet_host_service_address, (void*)hooked_enet_host_service, (void**)&orig_enet_host_service, "enet_host_service");
         hook_function(log_to_console_address, (void*)hooked_log_to_console, (void**)&orig_log_to_console, "log_to_console");
@@ -168,9 +177,7 @@ void lib_main() {
         hook_function(enet_send_packet_raw_address, (void*)hooked_enet_packet_send_raw, (void**)&orig_enet_send_packet_raw, "enet_send_packet_raw");
         hook_function(base_app_draw_address, (void*)hooked_base_app_draw, (void**)&orig_base_app_draw, "BaseApp::draw");
         hook_function(get_screen_width_address, (void*)hooked_get_screen_width, (void**)&orig_get_screen_width, "get_screen_width");
-
-        auto screen_width = orig_get_screen_width();
-        __android_log_print(ANDROID_LOG_INFO, "Kuro", "Screen width: %d", screen_width);
+        hook_function(get_screen_height_address, (void*)hooked_get_screen_height, (void**)&orig_get_screen_height, "get_screen_height");
     });
     thread.detach();
 }
