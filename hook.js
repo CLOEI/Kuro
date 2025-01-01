@@ -6,6 +6,7 @@ const baseapp_draw_address = base_address.add(0x163D5B0);
 const enet_send_packet_raw = base_address.add(0x100B2B0);
 const enet_send_packet = base_address.add(0x100B47C);
 const log_to_console = base_address.add(0x119AC74);
+const get_screen_width_address = base_address.add(0x16B469C);
 
 if (!base_address) {
   console.error("Base address not found");
@@ -64,8 +65,8 @@ Interceptor.attach(enet_peer_send_address, {
   }
 });
 
-Interceptor.attach(base_address.add(baseapp_draw_address), {
-  onEnter: function(args) {
-    console.log("draw()");
+Interceptor.attach(get_screen_width_address, {
+  onLeave: function(retval) {
+    console.log('Original return value:', retval.toUInt32());
   }
 });
