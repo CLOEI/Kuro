@@ -50,10 +50,10 @@ void render_menu() {
         io.IniFilename = nullptr;
         ImGui_ImplOpenGL3_Init();
         ImFontConfig font_cfg;
-        font_cfg.SizePixels = 22.0f;
+        font_cfg.SizePixels = 32.0f;
         io.Fonts->AddFontDefault(&font_cfg);
         ImGui::StyleColorsDark();
-        ImGui::GetStyle().ScaleAllSizes(3.0f);
+        ImGui::GetStyle().ScaleAllSizes(io.DisplaySize.x / 360.0f);
         init = true;
     }
 
@@ -138,17 +138,17 @@ __int64_t hooked_get_screen_height() {
 }
 
 __int64_t hooked_native_on_touch(float x, float y, __int64_t a3, __int64_t a4, unsigned int type, int a6) {
-    ImGuiIO &io = ImGui::GetIO();
+    ImGuiIO& io = ImGui::GetIO();
+    io.MousePos = ImVec2(x, y);
     switch (type) {
+        case 0:
+            io.MouseDown[0] = true;
+            break;
         case 1:
             io.MouseDown[0] = false;
             break;
         case 2:
-            io.MousePos = ImVec2(x, y);
             io.MouseDown[0] = true;
-            break;
-        case 3:
-            io.MousePos = ImVec2(x, y);
             break;
         default:
             break;
