@@ -27,6 +27,7 @@ typedef __int64_t (*base_app_draw_t)(__int64_t a1);
 typedef __int64_t (*get_screen_width_t)();
 typedef __int64_t (*get_screen_height_t)();
 typedef __int64_t (*native_on_touch_t)(float a1, float a2, __int64_t a3, __int64_t a4, unsigned int a5, int a6);
+typedef void (*on_press_punch_button_t)(ImVec2 *a1);
 
 enet_host_service_t orig_enet_host_service = nullptr;
 log_to_console_t orig_log_to_console = nullptr;
@@ -36,6 +37,9 @@ base_app_draw_t orig_base_app_draw = nullptr;
 get_screen_width_t orig_get_screen_width = nullptr;
 get_screen_height_t orig_get_screen_height = nullptr;
 native_on_touch_t orig_native_on_touch = nullptr;
+on_press_punch_button_t orig_on_press_punch_button = nullptr;
+
+ENetPeer* peer = nullptr;
 
 void render_menu() {
     if (!init) {
@@ -77,6 +81,7 @@ int hooked_enet_host_service(ENetHost *host, ENetEvent *event, uint32_t timeout)
         switch (event->type) {
             case ENET_EVENT_TYPE_CONNECT:
                 orig_log_to_console("ENet event type: ENET_EVENT_TYPE_CONNECT");
+                peer = event->peer;
                 break;
             case ENET_EVENT_TYPE_DISCONNECT:
                 orig_log_to_console("ENet event type: ENET_EVENT_TYPE_DISCONNECT");
@@ -156,6 +161,11 @@ __int64_t hooked_native_on_touch(float x, float y, __int64_t a3, __int64_t a4, u
     return orig_native_on_touch(x, y, a3, a4, type, a6);
 }
 
+void hooked_on_press_punch_button(ImVec2 *a1) {
+    __android_log_print(ANDROID_LOG_INFO, "Kuro", "Punch button x: %f, y: %f", a1->x, a1->y);
+    orig_on_press_punch_button(a1);
+}
+
 void hook_function(void* functionAddress, void* hookedFunction, void** originalFunction, const char* functionName) {
     if (DobbyHook(functionAddress, (dobby_dummy_func_t)hookedFunction, (dobby_dummy_func_t*)originalFunction) == 0) {
         __android_log_print(ANDROID_LOG_INFO, "Kuro", "%s hooked", functionName);
@@ -186,6 +196,7 @@ void lib_main() {
         void* get_screen_width_address = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(baseAddress) + 0x16B469C);
         void* get_screen_height_address = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(baseAddress) + 0x16B46A8);
         void* native_on_touch_address = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(baseAddress) + 0x16718EC);
+        void* on_press_punch_button_address = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(baseAddress) + 0xDF6058);
         __android_log_print(ANDROID_LOG_INFO, "Kuro", "enet_host_service address: %p", enet_host_service_address);
         __android_log_print(ANDROID_LOG_INFO, "Kuro", "log_to_console address: %p", log_to_console_address);
         __android_log_print(ANDROID_LOG_INFO, "Kuro", "enet_send_packet address: %p", enet_send_packet_address);
@@ -194,6 +205,7 @@ void lib_main() {
         __android_log_print(ANDROID_LOG_INFO, "Kuro", "get_screen_width address: %p", get_screen_width_address);
         __android_log_print(ANDROID_LOG_INFO, "Kuro", "get_screen_height address: %p", get_screen_height_address);
         __android_log_print(ANDROID_LOG_INFO, "Kuro", "native_on_touch address: %p", native_on_touch_address);
+        __android_log_print(ANDROID_LOG_INFO, "Kuro", "on_press_punch_button address: %p", on_press_punch_button_address);
 
         hook_function(enet_host_service_address, (void*)hooked_enet_host_service, (void**)&orig_enet_host_service, "enet_host_service");
         hook_function(log_to_console_address, (void*)hooked_log_to_console, (void**)&orig_log_to_console, "log_to_console");
@@ -203,6 +215,7 @@ void lib_main() {
         hook_function(get_screen_width_address, (void*)hooked_get_screen_width, (void**)&orig_get_screen_width, "get_screen_width");
         hook_function(get_screen_height_address, (void*)hooked_get_screen_height, (void**)&orig_get_screen_height, "get_screen_height");
         hook_function(native_on_touch_address, (void*)hooked_native_on_touch, (void**)&orig_native_on_touch, "native_on_touch");
+        hook_function(on_press_punch_button_address, (void*)hooked_on_press_punch_button, (void**)&orig_on_press_punch_button, "on_press_punch_button");
     });
     thread.detach();
 }

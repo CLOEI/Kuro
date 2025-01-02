@@ -7,6 +7,7 @@ const enet_send_packet_raw = base_address.add(0x100B2B0);
 const enet_send_packet = base_address.add(0x100B47C);
 const log_to_console = base_address.add(0x119AC74);
 const get_screen_width_address = base_address.add(0x16B469C);
+const on_press_punch_button_address = base_address.add(0xDF6058);
 
 if (!base_address) {
   console.error("Base address not found");
