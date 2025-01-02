@@ -13,8 +13,6 @@ include_directories(${CMAKE_SOURCE_DIR}/vendor/imgui)
 
 set(IMGUI_PATH ${CMAKE_SOURCE_DIR}/vendor/imgui)
 set(IMGUI_SRC
-        ${IMGUI_PATH}/backends/imgui_impl_android.h
-        ${IMGUI_PATH}/backends/imgui_impl_android.cpp
         ${IMGUI_PATH}/backends/imgui_impl_opengl3.cpp
         ${IMGUI_PATH}/backends/imgui_impl_opengl3.h
         ${IMGUI_PATH}/imgui.h
