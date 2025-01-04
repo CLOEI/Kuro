@@ -52,7 +52,7 @@ enum ETankPacketType : uint8_t {
 };
 
 struct TankPacket {
-    ETankPacketType _type;
+    ETankPacketType type;
     uint8_t unk1;
     uint8_t unk2;
     uint8_t unk3;

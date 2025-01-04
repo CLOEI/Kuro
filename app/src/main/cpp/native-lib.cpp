@@ -11,6 +11,7 @@
 #include "EGL/egl.h"
 #include <GLES3/gl3.h>
 #include <arm_neon.h>
+#include "packet.hpp"
 
 const std::string lib_game = "libgrowtopia.so";
 ElfScanner game_lib;
@@ -28,7 +29,6 @@ typedef __int64_t (*base_app_draw_t)(__int64_t a1);
 typedef __int64_t (*get_screen_width_t)();
 typedef __int64_t (*get_screen_height_t)();
 typedef __int64_t (*native_on_touch_t)(float a1, float a2, __int64_t a3, __int64_t a4, unsigned int a5, int a6);
-typedef void (*on_press_punch_button_t)(float32x2_t *a1);
 typedef void (*touch_at_world_coordinate_t)(__int64_t a1, float32x2_t *a2, char a3);
 
 enet_host_service_t orig_enet_host_service = nullptr;
@@ -79,23 +79,29 @@ void render_menu() {
 }
 
 int hooked_enet_host_service(ENetHost *host, ENetEvent *event, uint32_t timeout) {
-    if (log_host_service) {
-        switch (event->type) {
-            case ENET_EVENT_TYPE_CONNECT:
-                orig_log_to_console("ENet event type: ENET_EVENT_TYPE_CONNECT");
-                peer = event->peer;
+    bool should_send_packet = true;
+    switch (event->type) {
+        case ENET_EVENT_TYPE_CONNECT:
+            orig_log_to_console("ENet event type: ENET_EVENT_TYPE_CONNECT");
+            peer = event->peer;
+            break;
+        case ENET_EVENT_TYPE_DISCONNECT:
+            orig_log_to_console("ENet event type: ENET_EVENT_TYPE_DISCONNECT");
+            break;
+        case ENET_EVENT_TYPE_RECEIVE:
+            if (event->packet->dataLength < 4) {
                 break;
-            case ENET_EVENT_TYPE_DISCONNECT:
-                orig_log_to_console("ENet event type: ENET_EVENT_TYPE_DISCONNECT");
-                break;
-            case ENET_EVENT_TYPE_RECEIVE:
-                orig_log_to_console("Packet data length: %d", event->packet->dataLength);
-                break;
-            case ENET_EVENT_TYPE_NONE:
-                break;
-        }
+            }
+            Packet::handle(event->packet->data, &should_send_packet, log_host_service);
+            break;
+        case ENET_EVENT_TYPE_NONE:
+            break;
     }
-    return orig_enet_host_service(host, event, timeout);
+    if (should_send_packet) {
+        return orig_enet_host_service(host, event, timeout);
+    } else {
+        return 0;
+    }
 }
 
 void hooked_log_to_console(const char *a1, ...) {

@@ -10,3 +10,9 @@
 [submodule "app/src/main/cpp/vendor/enet"]
 	path = app/src/main/cpp/vendor/enet
 	url = https://github.com/lsalzman/enet.git
+[submodule "app/src/main/cpp/vendor/gtworld-cpp"]
+	path = app/src/main/cpp/vendor/gtworld-cpp
+	url = https://github.com/CLOEI/gtworld-cpp.git
+[submodule "app/src/main/cpp/vendor/magic_enum"]
+	path = app/src/main/cpp/vendor/magic_enum
+	url = https://github.com/Neargye/magic_enum.git
