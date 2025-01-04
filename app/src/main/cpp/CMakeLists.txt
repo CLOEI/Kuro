@@ -14,6 +14,7 @@ include_directories(${CMAKE_SOURCE_DIR}/vendor/enet/include)
 include_directories(${CMAKE_SOURCE_DIR}/vendor/imgui)
 include_directories(${CMAKE_SOURCE_DIR}/vendor/gtworld-cpp/include)
 include_directories(${CMAKE_SOURCE_DIR}/includes/)
+include_directories(${CMAKE_SOURCE_DIR}/vendor/gtitem-c)
 
 set(IMGUI_PATH ${CMAKE_SOURCE_DIR}/vendor/imgui)
 set(IMGUI_SRC
@@ -27,11 +28,15 @@ set(IMGUI_SRC
         ${IMGUI_PATH}/imgui_demo.cpp
 )
 
+set(GTITEM_PATH ${CMAKE_SOURCE_DIR}/vendor/gtitem-c/gtitem.c)
+
 add_library(${CMAKE_PROJECT_NAME} SHARED
         ${KITTYMEMORY_SRC}
         ${IMGUI_SRC}
+        ${GTITEM_PATH}
         ${CMAKE_SOURCE_DIR}/vendor/gtworld-cpp/world.cpp
         packet.cpp
+        astar.cpp
         native-lib.cpp)
 
 target_link_libraries(${CMAKE_PROJECT_NAME}

@@ -16,3 +16,6 @@
 [submodule "app/src/main/cpp/vendor/magic_enum"]
 	path = app/src/main/cpp/vendor/magic_enum
 	url = https://github.com/Neargye/magic_enum.git
+[submodule "app/src/main/cpp/vendor/gtitem-c"]
+	path = app/src/main/cpp/vendor/gtitem-c
+	url = https://github.com/CLOEI/gtitem-c.git

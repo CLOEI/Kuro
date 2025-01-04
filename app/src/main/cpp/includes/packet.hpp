@@ -1,6 +1,7 @@
 #pragma once
 #include <cstdint>
 #include <world.hpp>
+#include <gtitem.h>
 
 class Packet {
 public:
