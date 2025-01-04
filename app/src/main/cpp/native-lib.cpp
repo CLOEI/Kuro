@@ -79,7 +79,7 @@ void render_menu() {
 }
 
 int hooked_enet_host_service(ENetHost *host, ENetEvent *event, uint32_t timeout) {
-    bool should_send_packet = true;
+    bool should_process_packet = true;
     switch (event->type) {
         case ENET_EVENT_TYPE_CONNECT:
             orig_log_to_console("ENet event type: ENET_EVENT_TYPE_CONNECT");
@@ -92,12 +92,12 @@ int hooked_enet_host_service(ENetHost *host, ENetEvent *event, uint32_t timeout)
             if (event->packet->dataLength < 4) {
                 break;
             }
-            Packet::handle(event->packet->data, &should_send_packet, log_host_service);
+            Packet::handle(event->packet->data, &should_process_packet, log_host_service);
             break;
         case ENET_EVENT_TYPE_NONE:
             break;
     }
-    if (should_send_packet) {
+    if (should_process_packet) {
         return orig_enet_host_service(host, event, timeout);
     } else {
         return 0;

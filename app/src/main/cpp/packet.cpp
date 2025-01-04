@@ -3,7 +3,9 @@
 #include <magic_enum/magic_enum.hpp>
 #include <android/log.h>
 
-void Packet::handle(uint8_t *data, bool* should_send_packet, bool log_packet) {
+World Packet::world;
+
+void Packet::handle(uint8_t *data, bool* should_process_packet, bool log_packet) {
     EPacketType packet_type{*reinterpret_cast<uint32_t *>(data)};
     auto name = magic_enum::enum_name(
             magic_enum::enum_value<EPacketType>(packet_type));
@@ -20,8 +22,16 @@ void Packet::handle(uint8_t *data, bool* should_send_packet, bool log_packet) {
             if (log_packet) {
                 __android_log_print(ANDROID_LOG_INFO, "Kuro", "TankPacket type: %s", pkt_name.data());
             }
-            if (tank_packet.type == ETankPacketType::NetGamePacketAppIntegrityFail) { // not reallu sure it would do much. but it's worth a try
-                *should_send_packet = false;
+            switch (tank_packet.type) {
+                case ETankPacketType::NetGamePacketAppIntegrityFail: {
+                    *should_process_packet = false;  // not reallu sure it would do much. but it's worth a try
+                    break;
+                }
+                case ETankPacketType::NetGamePacketSendMapData: {
+                    world.parse(data + sizeof(TankPacket));
+                }
+                default:
+                    break;
             }
             break;
         }
