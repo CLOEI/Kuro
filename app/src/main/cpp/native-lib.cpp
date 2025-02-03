@@ -30,6 +30,7 @@ typedef __int64_t (*get_screen_width_t)();
 typedef __int64_t (*get_screen_height_t)();
 typedef __int64_t (*native_on_touch_t)(float a1, float a2, __int64_t a3, __int64_t a4, unsigned int a5, int a6);
 typedef void (*touch_at_world_coordinate_t)(__int64_t a1, float32x2_t *a2, char a3);
+typedef __int64_t (*world_tilemap_collide_t)(__int64_t a1, unsigned int a2, char a3, float a4, float a5, float a6, float a7, float a8, float a9);
 
 enet_host_service_t orig_enet_host_service = nullptr;
 log_to_console_t orig_log_to_console = nullptr;
@@ -40,6 +41,7 @@ get_screen_width_t orig_get_screen_width = nullptr;
 get_screen_height_t orig_get_screen_height = nullptr;
 native_on_touch_t orig_native_on_touch = nullptr;
 touch_at_world_coordinate_t orig_touch_at_world_coordinate = nullptr;
+world_tilemap_collide_t orig_collide = nullptr;
 
 ENetPeer* peer = nullptr;
 
@@ -138,6 +140,7 @@ __int64_t hooked_enet_packet_send_raw(__int64_t result, __int64_t a2, int a3, co
 }
 
 __int64_t hooked_base_app_draw(__int64_t a1) {
+    __android_log_print(ANDROID_LOG_INFO, "Kuro", "BaseApp::draw");
     render_menu();
     return orig_base_app_draw(a1);
 }
@@ -175,6 +178,10 @@ void hooked_touch_at_world_coordinate(__int64_t a1, float32x2_t *a2, char a3) {
     orig_touch_at_world_coordinate(a1, a2, a3);
 }
 
+__int64_t hooked_collide(__int64_t a1, unsigned int a2, char a3, float a4, float a5, float a6, float a7, float a8, float a9) {
+    return 138114289489936;
+}
+
 void hook_function(void* functionAddress, void* hookedFunction, void** originalFunction, const char* functionName) {
     if (DobbyHook(functionAddress, (dobby_dummy_func_t)hookedFunction, (dobby_dummy_func_t*)originalFunction) == 0) {
         __android_log_print(ANDROID_LOG_INFO, "Kuro", "%s hooked", functionName);
@@ -197,34 +204,28 @@ void lib_main() {
         __android_log_print(ANDROID_LOG_INFO, "Kuro", "Process Name: %s", processName.c_str());
         __android_log_print(ANDROID_LOG_INFO, "Kuro", "Base Address: %p", baseAddress);
 
-        void* enet_host_service_address = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(baseAddress) + 0x168790C);
-        void* log_to_console_address = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(baseAddress) + 0x119AC74);
-        void* enet_send_packet_address = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(baseAddress) + 0x100B47C);
-        void* enet_send_packet_raw_address = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(baseAddress) + 0x100B2B0);
-        void* base_app_draw_address = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(baseAddress) + 0x163D5B0);
-        void* get_screen_width_address = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(baseAddress) + 0x16B469C);
-        void* get_screen_height_address = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(baseAddress) + 0x16B46A8);
-        void* native_on_touch_address = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(baseAddress) + 0x16718EC);
-        void* touch_at_world_coordinate_address = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(baseAddress) + 0xE7A268);
+        void* enet_host_service_address = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(baseAddress) + 0x166E030);
+        void* enet_send_packet_address = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(baseAddress) + 0xFEEEC4);
+        void* enet_send_packet_raw_address = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(baseAddress) + 0xFEECF8);
+        void* base_app_draw_address = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(baseAddress) + 0x1623CD4);
+        void* get_screen_width_address = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(baseAddress) + 0x169ADC0);
+        void* get_screen_height_address = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(baseAddress) + 0x169ADCC);
+        void* world_tilemap_collide_address = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(baseAddress) + 0x106328C);
         __android_log_print(ANDROID_LOG_INFO, "Kuro", "enet_host_service address: %p", enet_host_service_address);
-        __android_log_print(ANDROID_LOG_INFO, "Kuro", "log_to_console address: %p", log_to_console_address);
         __android_log_print(ANDROID_LOG_INFO, "Kuro", "enet_send_packet address: %p", enet_send_packet_address);
         __android_log_print(ANDROID_LOG_INFO, "Kuro", "enet_send_packet_raw address: %p", enet_send_packet_raw_address);
         __android_log_print(ANDROID_LOG_INFO, "Kuro", "BaseApp::draw address: %p", base_app_draw_address);
         __android_log_print(ANDROID_LOG_INFO, "Kuro", "get_screen_width address: %p", get_screen_width_address);
         __android_log_print(ANDROID_LOG_INFO, "Kuro", "get_screen_height address: %p", get_screen_height_address);
-        __android_log_print(ANDROID_LOG_INFO, "Kuro", "native_on_touch address: %p", native_on_touch_address);
-        __android_log_print(ANDROID_LOG_INFO, "Kuro", "touch_at_world_coordinate address: %p", touch_at_world_coordinate_address);
+        __android_log_print(ANDROID_LOG_INFO, "Kuro", "net_moving_collide address: %p", world_tilemap_collide_address);
 
-        hook_function(enet_host_service_address, (void*)hooked_enet_host_service, (void**)&orig_enet_host_service, "enet_host_service");
-        hook_function(log_to_console_address, (void*)hooked_log_to_console, (void**)&orig_log_to_console, "log_to_console");
-        hook_function(enet_send_packet_address, (void*)hooked_enet_packet_send, (void**)&orig_enet_send_packet, "enet_send_packet");
-        hook_function(enet_send_packet_raw_address, (void*)hooked_enet_packet_send_raw, (void**)&orig_enet_send_packet_raw, "enet_send_packet_raw");
-        hook_function(base_app_draw_address, (void*)hooked_base_app_draw, (void**)&orig_base_app_draw, "BaseApp::draw");
-        hook_function(get_screen_width_address, (void*)hooked_get_screen_width, (void**)&orig_get_screen_width, "get_screen_width");
-        hook_function(get_screen_height_address, (void*)hooked_get_screen_height, (void**)&orig_get_screen_height, "get_screen_height");
-        hook_function(native_on_touch_address, (void*)hooked_native_on_touch, (void**)&orig_native_on_touch, "native_on_touch");
-        hook_function(touch_at_world_coordinate_address, (void*)hooked_touch_at_world_coordinate, (void**)&orig_touch_at_world_coordinate, "touch_at_world_coordinate");
+//        hook_function(enet_host_service_address, (void*)hooked_enet_host_service, (void**)&orig_enet_host_service, "enet_host_service");
+//        hook_function(enet_send_packet_address, (void*)hooked_enet_packet_send, (void**)&orig_enet_send_packet, "enet_send_packet");
+//        hook_function(enet_send_packet_raw_address, (void*)hooked_enet_packet_send_raw, (void**)&orig_enet_send_packet_raw, "enet_send_packet_raw");
+//        hook_function(base_app_draw_address, (void*)hooked_base_app_draw, (void**)&orig_base_app_draw, "BaseApp::draw");
+//        hook_function(get_screen_width_address, (void*)hooked_get_screen_width, (void**)&orig_get_screen_width, "get_screen_width");
+//        hook_function(get_screen_height_address, (void*)hooked_get_screen_height, (void**)&orig_get_screen_height, "get_screen_height");
+        hook_function(world_tilemap_collide_address, (void*)hooked_collide, (void**)&orig_collide, "net_moving_collide");
     });
     thread.detach();
 }
