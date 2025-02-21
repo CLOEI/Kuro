@@ -1,3 +1,9 @@
-[submodule "thirdparty/android-inline-hook"]
-	path = thirdparty/android-inline-hook
-	url = https://github.com/bytedance/android-inline-hook.git
+[submodule "thirdparty/Dobby"]
+	path = thirdparty/Dobby
+	url = https://github.com/jmpews/Dobby.git
+[submodule "thirdparty/magic_enum"]
+	path = thirdparty/magic_enum
+	url = https://github.com/Neargye/magic_enum.git
+[submodule "thirdparty/KittyMemory"]
+	path = thirdparty/KittyMemory
+	url = https://github.com/MJx0/KittyMemory.git
