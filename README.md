@@ -6,8 +6,10 @@ Growtopia android internal hack
 </div>
 
 ### Building & Requirement
+
 - Android NDK
+
 ```bash
 git submodule update --init
-cmake .. -DCMAKE_TOOLCHAIN_FILE=$ndk/build/cmake/android.toolchain.cmake -DANDROID_ABI=armeabi-v7a -DANDROID_PLATFORM=android-21
+cmake .. -DCMAKE_TOOLCHAIN_FILE=$ndk/build/cmake/android.toolchain.cmake -DANDROID_ABI=armeabi-v7a -DANDROID_PLATFORM=android-24
 ```
