@@ -1,5 +1,9 @@
 {
     "files.associations": {
-        "thread": "cpp"
+        "thread": "cpp",
+        "shadowhook.h": "c",
+        "stdint.h": "c",
+        "sh_util.h": "c",
+        "inttypes.h": "c"
     }
 }
