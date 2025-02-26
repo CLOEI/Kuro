@@ -9,7 +9,7 @@
             "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
-                "CMAKE_TOOLCHAIN_FILE": "C:/Users/admin/AppData/Local/Android/Sdk/ndk/27.0.12077973/build/cmake/android.toolchain.cmake",
+                "CMAKE_TOOLCHAIN_FILE": "$env{ANDROID_NDK_HOME}/build/cmake/android.toolchain.cmake",
                 "ANDROID_PLATFORM": "android-24",
                 "ANDROID_ABI": "armeabi-v7a"
             }
