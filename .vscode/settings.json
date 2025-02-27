@@ -4,6 +4,7 @@
         "shadowhook.h": "c",
         "stdint.h": "c",
         "sh_util.h": "c",
-        "inttypes.h": "c"
+        "inttypes.h": "c",
+        "ios": "cpp"
     }
 }

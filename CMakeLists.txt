@@ -16,7 +16,7 @@ add_library(${PROJECT_NAME} SHARED
         ${KITTYMEMORY_SRC}
         main.cpp)
 
-target_include_directories(${PROJECT_NAME} PUBLIC 
+target_include_directories(${PROJECT_NAME} PUBLIC
         ${KITTYMEMORY_PATH})
 
 target_link_libraries(${PROJECT_NAME}

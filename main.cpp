@@ -2,18 +2,16 @@
 #include <thread>
 #include "dobby.h"
 #include "KittyInclude.hpp"
-#include "enet/enet.h"
+#include "definition.hpp"
 
 auto libName = "libgrowtopia.so";
 ElfScanner elf;
 
-typedef int (*enet_host_service_t)(ENetHost *host, ENetEvent *event, enet_uint32 timeout);
-typedef int (*get_screen_width_t)();
-typedef int (*get_screen_height_t)();
-
 enet_host_service_t orig_enet_host_service = nullptr;
 get_screen_width_t orig_get_screen_width = nullptr;
 get_screen_height_t orig_get_screen_height = nullptr;
+send_packet_t orig_send_packet = nullptr;
+send_packet_raw_t orig_send_packet_raw = nullptr;
 
 int hooked_enet_host_service(ENetHost *host, ENetEvent *event, enet_uint32 timeout) {
   switch (event->type)
@@ -34,13 +32,21 @@ int hooked_enet_host_service(ENetHost *host, ENetEvent *event, enet_uint32 timeo
 }
 
 int hooked_get_screen_width() {
-  __android_log_print(ANDROID_LOG_INFO, "Kuro", "Get screen width called");
   return orig_get_screen_width();
 }
 
 int hooked_get_screen_height() {
-  __android_log_print(ANDROID_LOG_INFO, "Kuro", "Get screen height called");
   return orig_get_screen_height();
+}
+
+int hooked_send_packet(int type, uint8_t *data, int peer) {
+  __android_log_print(ANDROID_LOG_INFO, "Kuro", "send_packet called");
+  return orig_send_packet(type, data, peer);
+}
+
+int hooked_send_packet_raw(int type, int data, int packet_length, void *a4, int *peer, int flag) {
+  __android_log_print(ANDROID_LOG_INFO, "Kuro", "send_packet_raw called");
+  return orig_send_packet_raw(type, data, packet_length, a4, peer, flag);
 }
 
 void hook_function(void *functionAddress, void *hookedFunction, void **originalFunction, const char *functionName) {
@@ -51,8 +57,8 @@ void hook_function(void *functionAddress, void *hookedFunction, void **originalF
   }
 }
 
-__attribute__((constructor)) void dll_main() {
-  auto thread = std::thread([]() {
+__attribute__((constructor)) void lib_main() {
+  std::thread([]() {
     do {
       sleep(1);
       elf = ElfScanner::createWithPath(libName);
@@ -64,6 +70,8 @@ __attribute__((constructor)) void dll_main() {
     auto enet_host_service = base + 0x1085259;
     auto get_screen_width = base + 0x10A8089;
     auto get_screen_height = base + 0x10A8095;
+    auto send_packet = base + 0xB2B325;
+    auto send_packet_raw = base + 0xB2B209;
 
     __android_log_print(ANDROID_LOG_INFO, "Kuro",
                         "EnetHostService address is %p",
@@ -72,6 +80,10 @@ __attribute__((constructor)) void dll_main() {
                         "GetScreenWidth address is %p", (void *)get_screen_width);
     __android_log_print(ANDROID_LOG_INFO, "Kuro",
                         "GetScreenHeight address is %p", (void *)get_screen_height);
+    __android_log_print(ANDROID_LOG_INFO, "Kuro",
+                        "SendPacket address is %p", (void *)send_packet);
+    __android_log_print(ANDROID_LOG_INFO, "Kuro",
+                        "SendPacketRaw address is %p", (void *)send_packet_raw);
 
     hook_function((void *)enet_host_service,
                   (void *)hooked_enet_host_service,
@@ -84,6 +96,13 @@ __attribute__((constructor)) void dll_main() {
     hook_function((void *)get_screen_height,
                   (void *)hooked_get_screen_height,
                   (void **)&orig_get_screen_height, "get_screen_height");
-  });
-  thread.detach();
+    
+    hook_function((void *)send_packet,
+                  (void *)hooked_send_packet,
+                  (void **)&orig_send_packet, "send_packet");
+
+    hook_function((void *)send_packet_raw,
+                  (void *)hooked_send_packet_raw,
+                  (void **)&orig_send_packet_raw, "send_packet_raw");
+  }).detach();
 }
